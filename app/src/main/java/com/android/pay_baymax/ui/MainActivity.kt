@@ -23,6 +23,7 @@ import com.android.pay_baymax.adapter.IAdapterLogicActions
 import com.android.pay_baymax.business.BusinessLogic
 import com.android.pay_baymax.databinding.ActivityMainBinding
 import com.android.pay_baymax.rectrofit.ApiCalls
+import com.android.pay_baymax.room.AppDatabase
 import com.android.pay_baymax.room.entities.RateEntity
 import com.android.pay_baymax.viewModel.*
 import dagger.android.support.DaggerAppCompatActivity
@@ -45,6 +46,9 @@ class MainActivity : DaggerAppCompatActivity(), IAdapterLogicActions {
     lateinit var provideNetworkClient: Retrofit
 
     @Inject
+    lateinit var provideDataBase: AppDatabase
+
+    @Inject
     @Named("token")
     lateinit var token: Map<String, String>
 
@@ -63,7 +67,7 @@ class MainActivity : DaggerAppCompatActivity(), IAdapterLogicActions {
         sharedPreference = getSharedPreferences("com.android.pay_baymax", Context.MODE_PRIVATE)
         mHandler = Handler(Looper.getMainLooper())
 
-        currencyRateViewModel = ViewModelProvider(this, ViewModelFactory(this.application)).get(CurrencyRateViewModel::class.java)
+        currencyRateViewModel = ViewModelProvider(this, ViewModelFactory(provideDataBase)).get(CurrencyRateViewModel::class.java)
         currencyRateViewModel.getCurrencyRatesAndTypes(ApiCalls(provideNetworkClient, token), sharedPreference).observe(this, ratesObserver)
         currencyRateViewModel.retrieveKeptUnitAndSelected().observe(this, conversionPossibleEventObserver)
 

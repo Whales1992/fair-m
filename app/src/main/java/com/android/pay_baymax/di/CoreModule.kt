@@ -1,7 +1,11 @@
 package com.android.pay_baymax.di
 
+import android.app.Application
+import androidx.room.Room
 import com.android.pay_baymax.ApiToken
+import com.android.pay_baymax.DATABASE_NAME
 import com.android.pay_baymax.RequestBaseUrl
+import com.android.pay_baymax.room.AppDatabase
 import dagger.Module
 import dagger.Provides
 import okhttp3.Interceptor
@@ -52,4 +56,9 @@ class CoreModule {
             .build()
     }
 
+    @Singleton
+    @Provides
+    fun provideDataBase(application: Application) : AppDatabase {
+        return Room.databaseBuilder(application.applicationContext, AppDatabase::class.java, DATABASE_NAME).build()
+    }
 }

@@ -1,17 +1,14 @@
 package com.android.pay_baymax.viewModel
 
-import android.app.Application
 import android.content.SharedPreferences
 import android.util.Log
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.android.pay_baymax.rectrofit.ApiCalls
 import com.android.pay_baymax.rectrofit.dto.CurrencyConversionRates
 import com.android.pay_baymax.rectrofit.dto.CurrencyConversionTypes
 import com.android.pay_baymax.repository.ApiRepository
 import com.android.pay_baymax.repository.RoomRepository
+import com.android.pay_baymax.room.AppDatabase
 import com.android.pay_baymax.room.entities.RateEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,7 +19,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 
-class CurrencyRateViewModel(application: Application) : AndroidViewModel(application)
+class CurrencyRateViewModel(appDatabase: AppDatabase) : ViewModel()
 {
     private val responseMutableLiveData: MutableLiveData<ResponseObjectMapper> = MutableLiveData()
     private val keepUnitAndSelectedMutableLiveData: MutableLiveData<Map<String, Any>> = MutableLiveData(mapOf("unit" to 0.0, "selectedPosition" to 0))
@@ -30,7 +27,7 @@ class CurrencyRateViewModel(application: Application) : AndroidViewModel(applica
     private val mCurrencyConversionRates = MutableLiveData<CurrencyConversionRates>()
     private val mCurrencyConversionTypes = MutableLiveData<CurrencyConversionTypes>()
 
-    private val dbRepository = RoomRepository(application)
+    private val dbRepository = RoomRepository(appDatabase)
 
     fun getCurrencyRatesAndTypes(apiCalls: ApiCalls, sharedPreference: SharedPreferences): LiveData<ResponseObjectMapper>
     {
