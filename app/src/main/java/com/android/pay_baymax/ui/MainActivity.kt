@@ -16,7 +16,6 @@ import androidx.core.text.bold
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import com.android.pay_baymax.R
 import com.android.pay_baymax.adapter.GridViewAdapter
 import com.android.pay_baymax.adapter.IAdapterLogicActions
@@ -27,7 +26,6 @@ import com.android.pay_baymax.room.AppDatabase
 import com.android.pay_baymax.room.entities.RateEntity
 import com.android.pay_baymax.viewModel.*
 import dagger.android.support.DaggerAppCompatActivity
-import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import java.text.DecimalFormat
 import javax.inject.Inject
@@ -52,7 +50,7 @@ class MainActivity : DaggerAppCompatActivity(), IAdapterLogicActions {
     @Named("token")
     lateinit var token: Map<String, String>
 
-    lateinit var sharedPreference: SharedPreferences
+    private lateinit var sharedPreference: SharedPreferences
 
     private var unit = 0.0
     private var position = 0
@@ -72,7 +70,7 @@ class MainActivity : DaggerAppCompatActivity(), IAdapterLogicActions {
         currencyRateViewModel.retrieveKeptUnitAndSelected().observe(this, conversionPossibleEventObserver)
 
         binding.amountHintEdittext.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD_ITALIC)
-        binding.amountHintEdittext.doOnTextChanged { text, start, before, count ->
+        binding.amountHintEdittext.doOnTextChanged { text, _, _, _ ->
             val amount = text.toString()
 
             if (amount.isEmpty())
@@ -109,7 +107,7 @@ class MainActivity : DaggerAppCompatActivity(), IAdapterLogicActions {
                     adapter = ArrayAdapter<String>(this, simple_spinner_dropdown_item, lists)
                     binding.conversionRateListSpinner.adapter = adapter
                     binding.conversionRateListSpinner.onItemSelectedListener = spinnerAdapter
-                    adapter.notifyDataSetChanged();
+                    adapter.notifyDataSetChanged()
 
                     binding.emptyTextview.text = if (rateList.size < 0) getText(R.string.empty_text) else ""
 
@@ -136,21 +134,15 @@ class MainActivity : DaggerAppCompatActivity(), IAdapterLogicActions {
 
     override fun convert(country_textview: TextView, currency_textview: TextView, rateItem: RateEntity) {
         val selectRate = rateItem.currency_rate
-
         country_textview.text = rateItem.currency_name
 
-        lifecycleScope.launch {
-            val convertedAmount = BusinessLogic().convert(unit, selectRate!!, rateList[position].currency_rate!!)
-            val money = DecimalFormat("#,###.##").format(convertedAmount)
+        val convertedAmount = BusinessLogic().convertUnSecure(unit, selectRate!!, rateList[position].currency_rate!!)
+        val money = DecimalFormat("#,###.##").format(convertedAmount)
 
-            val finalResult = SpannableStringBuilder()
-                    .append("${rateItem.currency_code} \n")
-                    .bold{ append(money) }
+        val finalResult = SpannableStringBuilder()
+                .append("${rateItem.currency_code} \n")
+                .bold{ append(money) }
 
-            runOnUiThread{
-                currency_textview.text = finalResult
-            }
-        }
-
+        currency_textview.text = finalResult
     }
 }

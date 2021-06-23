@@ -5,6 +5,10 @@ class UnitConvert(private val unit:Double, private val rate:Double, private val 
         return ((rate*unit)/rateAgainst)
     }
 
+    override fun convertUnSecure() : Double{
+        return ((rate*unit)/rateAgainst)
+    }
+
     override suspend fun convertLocal() : Double{
 //        TODO("Not yet implemented")
         return 0.0

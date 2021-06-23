@@ -66,7 +66,7 @@ class CurrencyRateViewModel(appDatabase: AppDatabase) : ViewModel()
                     }
                 }else{
                     withContext(Dispatchers.IO) {
-                        Log.e("@LOCAL NEXT", "...");
+                        Log.e("@LOCAL NEXT", "...")
                         responseMutableLiveData.postValue(ResponseObjectMapper(true, dbRepository.loadRateList() as ArrayList<RateEntity>))
                     }
                 }
