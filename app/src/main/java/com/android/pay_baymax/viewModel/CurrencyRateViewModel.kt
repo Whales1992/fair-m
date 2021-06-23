@@ -18,7 +18,6 @@ import java.lang.Thread.sleep
 import java.util.*
 import kotlin.collections.ArrayList
 
-
 class CurrencyRateViewModel(appDatabase: AppDatabase) : ViewModel()
 {
     private val responseMutableLiveData: MutableLiveData<ResponseObjectMapper> = MutableLiveData()
@@ -42,17 +41,14 @@ class CurrencyRateViewModel(appDatabase: AppDatabase) : ViewModel()
 
                         Thread(GetCurrency(apiCalls, object : CallBack{
                             override fun onCurrencyConversionRatesDone(currencyConversionRates: CurrencyConversionRates) {
-                                Log.e("TAG0", "$currencyConversionRates")
                                 mCurrencyConversionRates.postValue(currencyConversionRates)
                             }
 
                             override fun onCurrencyConversionTypesDone(currencyConversionTypes: CurrencyConversionTypes) {
-                                Log.e("TAG1", "$currencyConversionTypes")
                                 mCurrencyConversionTypes.postValue(currencyConversionTypes)
                             }
 
                             override fun onDone() {
-                                Log.e("TAG2", "DONE")
                                 try {
                                     responseMutableLiveData.postValue(ResponseObjectMapper(true, marshallData()))
                                 }catch (ex:Exception){
@@ -60,13 +56,14 @@ class CurrencyRateViewModel(appDatabase: AppDatabase) : ViewModel()
                                 }
                             }
 
-                            override fun onFailure(res: String) {}
+                            override fun onFailure(res: String) {
+                                responseMutableLiveData.postValue(ResponseObjectMapper(false, null))
+                            }
 
                         })).start()
                     }
                 }else{
                     withContext(Dispatchers.IO) {
-                        Log.e("@LOCAL NEXT", "...")
                         responseMutableLiveData.postValue(ResponseObjectMapper(true, dbRepository.loadRateList() as ArrayList<RateEntity>))
                     }
                 }

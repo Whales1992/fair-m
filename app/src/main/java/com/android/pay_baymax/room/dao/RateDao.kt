@@ -8,8 +8,8 @@ interface RateDao {
     @Query("SELECT * from rateentity")
     fun getAllRates(): List<RateEntity>
 
-    @Query("SELECT * from rateentity WHERE currency_code = :currency_code")
-    fun findRateByTypeCurrencyCode(currency_code: String): RateEntity
+    @Query("SELECT * from rateentity WHERE currency_code = :currencyCode")
+    fun findRateByTypeCurrencyCode(currencyCode: String): RateEntity
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun updateCurrencyRate(rateData: RateEntity)

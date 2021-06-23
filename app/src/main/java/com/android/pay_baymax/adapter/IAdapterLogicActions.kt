@@ -5,8 +5,8 @@ import com.android.pay_baymax.room.entities.RateEntity
 
 interface IAdapterLogicActions {
     fun convert(
-        country_textview: TextView,
-        currency_textview: TextView,
+        countryTextView: TextView,
+        currencyTextView: TextView,
         rateItem: RateEntity
     )
 }

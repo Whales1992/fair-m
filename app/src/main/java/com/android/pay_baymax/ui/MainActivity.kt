@@ -94,26 +94,25 @@ class MainActivity : DaggerAppCompatActivity(), IAdapterLogicActions {
     }
 
     private val ratesObserver = Observer<ResponseObjectMapper> { t ->
-        if (t != null && t.isSuccess()) {
-            if (t.isSuccess() && t.responseObject() != null) {
-                val lists = ArrayList<String>()
-                rateList.addAll(t.responseObject() as ArrayList<RateEntity>)
+        if (t != null && t.isSuccess() && t.responseObject() != null) {
+            val lists = ArrayList<String>()
 
-                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                    rateList.stream().forEach { lists.add("--${it.currency_code}-- ${it.currency_name}") }
-                }
+            rateList.addAll(t.responseObject() as ArrayList<RateEntity>)
 
-                runOnUiThread {
-                    adapter = ArrayAdapter<String>(this, simple_spinner_dropdown_item, lists)
-                    binding.conversionRateListSpinner.adapter = adapter
-                    binding.conversionRateListSpinner.onItemSelectedListener = spinnerAdapter
-                    adapter.notifyDataSetChanged()
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                rateList.stream().forEach { lists.add("--${it.currencyCode}-- ${it.currencyName}") }
+            }
 
-                    binding.emptyTextview.text = if (rateList.size < 0) getText(R.string.empty_text) else ""
+            runOnUiThread {
+                adapter = ArrayAdapter<String>(this, simple_spinner_dropdown_item, lists)
+                binding.conversionRateListSpinner.adapter = adapter
+                binding.conversionRateListSpinner.onItemSelectedListener = spinnerAdapter
+                adapter.notifyDataSetChanged()
 
-                    gridViewAdapter = GridViewAdapter(this, rateList, this)
-                    binding.listGridView.adapter = gridViewAdapter
-                }
+                binding.emptyTextview.text = if (rateList.size < 0) getText(R.string.empty_text) else ""
+
+                gridViewAdapter = GridViewAdapter(this, rateList, this)
+                binding.listGridView.adapter = gridViewAdapter
             }
         }
     }
@@ -121,9 +120,6 @@ class MainActivity : DaggerAppCompatActivity(), IAdapterLogicActions {
     private val spinnerAdapter = object : AdapterView.OnItemSelectedListener {
         override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
             adapter.setDropDownViewResource(R.layout.activity_spinner)
-//            if(view!=null)
-//                (view as TextView).setTextColor(resources.getColor(R.color.teal_green))
-
             currencyRateViewModel.keepUnitAndSelected(-1.0, position)
         }
 
@@ -132,17 +128,17 @@ class MainActivity : DaggerAppCompatActivity(), IAdapterLogicActions {
         }
     }
 
-    override fun convert(country_textview: TextView, currency_textview: TextView, rateItem: RateEntity) {
-        val selectRate = rateItem.currency_rate
-        country_textview.text = rateItem.currency_name
+    override fun convert(countryTextView: TextView, currencyTextView: TextView, rateItem: RateEntity) {
+        val selectRate = rateItem.currencyRate
+        countryTextView.text = rateItem.currencyName
 
-        val convertedAmount = BusinessLogic().convertUnSecure(unit, selectRate!!, rateList[position].currency_rate!!)
+        val convertedAmount = BusinessLogic().convertUnSecure(unit, selectRate!!, rateList[position].currencyRate!!)
         val money = DecimalFormat("#,###.##").format(convertedAmount)
 
         val finalResult = SpannableStringBuilder()
-                .append("${rateItem.currency_code} \n")
+                .append("${rateItem.currencyCode} \n")
                 .bold{ append(money) }
 
-        currency_textview.text = finalResult
+        currencyTextView.text = finalResult
     }
 }

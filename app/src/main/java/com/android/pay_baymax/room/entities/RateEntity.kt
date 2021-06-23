@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
 @Entity
 data class RateEntity(
     @PrimaryKey
-    @ColumnInfo(name = "currency_code") val currency_code: String,
-    @ColumnInfo(name = "currency_rate") val currency_rate: Double?,
-    @ColumnInfo(name = "currency_name") val currency_name: String?,
+    @ColumnInfo(name = "currency_code") val currencyCode: String,
+    @ColumnInfo(name = "currency_rate") val currencyRate: Double?,
+    @ColumnInfo(name = "currency_name") val currencyName: String?,
 )

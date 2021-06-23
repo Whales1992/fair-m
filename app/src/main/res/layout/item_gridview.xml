@@ -18,13 +18,13 @@
             android:id="@+id/country_textview"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/country_textview"/>
+            style="@style/countryTextView"/>
 
         <TextView
             android:id="@+id/currency_textview"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/currency_textview"/>
+            style="@style/currencyTextView"/>
 
     </LinearLayout>
 

@@ -32,6 +32,13 @@ class BusinessLogicUnitTest {
     }
 
     @Test
+    fun testUnitConversionUnSecure() {
+        val result  = BusinessLogic().convertUnSecure(100.0,156.85,410.0)
+        val expected  = 38
+        assertEquals(expected, result.roundToInt())
+    }
+
+    @Test
     fun testUnitConversionLocal() = runBlocking {
         val result  = BusinessLogic().convertLocal(100.0,156.85,410.0)
         val expected  = 0
