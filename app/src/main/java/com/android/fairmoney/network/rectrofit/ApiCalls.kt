@@ -1,19 +1,20 @@
-package com.android.fairmoney.rectrofit
+package com.android.fairmoney.network.rectrofit
 
-import com.android.fairmoney.rectrofit.dto.CurrencyConversionRates
-import com.android.fairmoney.rectrofit.dto.CurrencyConversionTypes
+import com.android.fairmoney.models.User
+import com.android.fairmoney.models.UserDetail
 import io.reactivex.Observable
+import retrofit2.Call
 import retrofit2.Retrofit
 
-class ApiCalls(retrofit: Retrofit, private val token :Map<String, String>) {
+class ApiCalls(retrofit: Retrofit) {
 
     private var iApi: IApi = retrofit.create(IApi::class.java)
 
-    fun getCurrencyTypesClient(): Observable<CurrencyConversionTypes> {
-        return iApi.getCurrencyTypes(token)
+    fun getUsersApiCall(): Call<User> {
+        return iApi.getUsers()
     }
 
-    fun getCurrencyRatesClient(): Observable<CurrencyConversionRates> {
-        return iApi.getCurrencyConversionRates(token)
+    fun getUsersDetailApiCall(userId : String): Call<UserDetail> {
+        return iApi.getUsersDetail(userId)
     }
 }

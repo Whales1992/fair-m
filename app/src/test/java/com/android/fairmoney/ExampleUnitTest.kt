@@ -1,4 +1,4 @@
-package com.android.pay_baymax
+package com.android.fairmoney
 
 import org.junit.Test
 

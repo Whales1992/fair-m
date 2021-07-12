@@ -1,6 +1,7 @@
-package com.android.pay_baymax.di
+package com.android.fairmoney.di
 
-import com.android.pay_baymax.ui.MainActivity
+import com.android.fairmoney.activities.MainActivity
+import com.android.fairmoney.activities.UserDetailActivity
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 
@@ -10,4 +11,6 @@ abstract class ActivityBuildersModule {
     @ContributesAndroidInjector
     abstract fun contributeMainActivity(): MainActivity?
 
+    @ContributesAndroidInjector
+    abstract fun contributeUserDetailActivity(): UserDetailActivity?
 }

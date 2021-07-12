@@ -1,11 +1,8 @@
-package com.android.pay_baymax.repository
+package com.android.fairmoney.repository
 
-import com.android.pay_baymax.rectrofit.ApiCalls
-import com.android.pay_baymax.rectrofit.IResponse
-import com.android.pay_baymax.rectrofit.dto.CurrencyConversionRates
-import com.android.pay_baymax.rectrofit.dto.CurrencyConversionTypes
+import com.android.fairmoney.network.rectrofit.ApiCalls
 
 class ApiRepository(private val apiCalls: ApiCalls) {
-    fun getCurrencyTypeClient() = apiCalls.getCurrencyTypesClient()
-    fun getCurrencyRatesClient() = apiCalls.getCurrencyRatesClient()
+    fun getUsersApiRepository() = apiCalls.getUsersApiCall()
+    fun getUsersDetailApiRepository(userId : String) = apiCalls.getUsersDetailApiCall(userId)
 }

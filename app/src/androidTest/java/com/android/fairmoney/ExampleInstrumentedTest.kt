@@ -1,4 +1,4 @@
-package com.android.pay_baymax
+package com.android.fairmoney
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.android.pay_baymax", appContext.packageName)
+        assertEquals("com.android.fairmoney", appContext.packageName)
     }
 }

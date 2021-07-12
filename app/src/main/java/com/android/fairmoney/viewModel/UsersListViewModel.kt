@@ -1,101 +1,88 @@
 package com.android.fairmoney.viewModel
 
-import android.content.SharedPreferences
+import android.util.Log
 import androidx.lifecycle.*
 import com.android.fairmoney.network.rectrofit.ApiCalls
-import com.android.fairmoney.network.rectrofit.dto.UsersListDTO
-import com.android.fairmoney.network.rectrofit.dto.CurrencyConversionTypes
 import com.android.fairmoney.repository.ApiRepository
 import com.android.fairmoney.repository.RoomRepository
 import com.android.fairmoney.database.room.AppDatabase
-import com.android.fairmoney.database.room.entities.RateEntity
+import com.android.fairmoney.database.room.entities.UserEntity
+import com.android.fairmoney.models.User
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.lang.Exception
-import java.lang.Thread.sleep
-import java.util.*
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.lang.RuntimeException
+import java.util.NoSuchElementException
 import kotlin.collections.ArrayList
 
-class CurrencyRateViewModel(appDatabase: AppDatabase) : ViewModel()
+class UsersListViewModel(appDatabase: AppDatabase) : ViewModel()
 {
-    private val responseMutableLiveData: MutableLiveData<ResponseObjectMapper> = MutableLiveData()
+    private val TAG = this.javaClass.simpleName
+    private val mUsersListMutableLiveData: MutableLiveData<List<User.DataBeam>> = MutableLiveData()
+    private val mRoomRepository = RoomRepository(appDatabase)
 
-    private val mUsersList = MutableLiveData<UsersListDTO>()
-
-    private val dbRepository = RoomRepository(appDatabase)
-
-    fun getCurrencyRatesAndTypes(apiCalls: ApiCalls, sharedPreference: SharedPreferences): LiveData<ResponseObjectMapper>
+    fun getUsersList(apiCalls: ApiCalls): LiveData<List<User.DataBeam>>
     {
         try {
             viewModelScope.launch {
-                val currentTime = Calendar.getInstance().time.time
+                withContext(Dispatchers.IO) {
+                    populateLocallyStoredData()
 
-                if((sharedPreference.getLong("last_call", 0) + (30 * 60 * 1000)) <= currentTime){
-                    sharedPreference.edit().putLong("last_call", Calendar.getInstance().time.time).apply()
+                    ApiRepository(apiCalls).getUsersApiRepository().enqueue(object : Callback<User>{
+                        override fun onResponse(call: Call<User>, response: Response<User>) {
+                            if(response.isSuccessful && response.body()!=null){
+                                val userEntityList = ArrayList<UserEntity>()
 
-                    withContext(Dispatchers.IO) {
+                                response.body()!!.data.forEach { userEntityList.add(UserEntity.from(it)) }
 
-                        Thread(GetCurrency(apiCalls, object : CallBack{
-                            override fun onCurrencyConversionRatesDone(usersListDTO: UsersListDTO) {
-                                mCurrencyConversionRates.postValue(usersListDTO)
+                                mUsersListMutableLiveData.postValue(userEntityList.map { it.toUser() })
+
+                                updateLocalStorage(userEntityList)
                             }
+                        }
 
-                            override fun onCurrencyConversionTypesDone(currencyConversionTypes: CurrencyConversionTypes) {
-                                mCurrencyConversionTypes.postValue(currencyConversionTypes)
-                            }
-
-                            override fun onDone() {
-                                try {
-                                    responseMutableLiveData.postValue(ResponseObjectMapper(true, marshallData()))
-                                }catch (ex:Exception){
-                                    ex.printStackTrace()
-                                }
-                            }
-
-                            override fun onFailure(res: String) {
-                                responseMutableLiveData.postValue(ResponseObjectMapper(false, null))
-                            }
-
-                        })).start()
-                    }
-                }else{
-                    withContext(Dispatchers.IO) {
-                        responseMutableLiveData.postValue(ResponseObjectMapper(true, dbRepository.loadRateList() as ArrayList<RateEntity>))
-                    }
+                        override fun onFailure(call: Call<User>, t: Throwable) {
+                            Log.d(TAG, "$t")
+                        }
+                    })
                 }
             }
         } catch (ex: IllegalThreadStateException) {
             ex.printStackTrace()
+            populateLocallyStoredData()
+        } catch (ex: NoSuchElementException){
+            ex.printStackTrace()
+            populateLocallyStoredData()
+        }catch (ex: RuntimeException){
+            ex.printStackTrace()
+            populateLocallyStoredData()
         }
 
-        return responseMutableLiveData
+        return mUsersListMutableLiveData
     }
 
-    interface CallBack{
-        fun onCurrencyConversionRatesDone(usersListDTO: UsersListDTO)
-        fun onCurrencyConversionTypesDone(currencyConversionTypes: CurrencyConversionTypes)
-        fun onDone()
-        fun onFailure(res: String)
+    private fun updateLocalStorage(userEntityList: ArrayList<UserEntity>){
+        viewModelScope.launch{
+            withContext(Dispatchers.IO) {
+                mRoomRepository.updateAllUsers(userEntityList)
+            }
+        }
     }
 
-    class GetCurrency(private val apiCalls: ApiCalls, private val callBack: CallBack): Runnable
-    {
-        override fun run(){
-            val ratesClient = ApiRepository(apiCalls).getCurrencyRatesClient()
-
-            val ratesResult = ratesClient.blockingSingle()
-
-            sleep(2000)
-
-            callBack.onCurrencyConversionRatesDone(ratesResult)
-
-            sleep(2000)
-
-            if(ratesResult.success)
-                callBack.onDone()
-            else
-                callBack.onFailure(ratesResult)
+    private fun populateLocallyStoredData(){
+        try {
+            viewModelScope.launch{
+                withContext(Dispatchers.IO) {
+                    val usersList = mRoomRepository.loadUsersList()
+                    if(usersList!=null) mUsersListMutableLiveData.postValue(usersList.map { it.toUser() })
+                }
+            }
+        }catch (ex: RuntimeException){
+            ex.printStackTrace()
+            Log.e(TAG, "$ex")
         }
     }
 

@@ -1,69 +1,83 @@
 package com.android.fairmoney.viewModel
 
+import android.util.Log
 import androidx.lifecycle.*
 import com.android.fairmoney.network.rectrofit.ApiCalls
 import com.android.fairmoney.repository.ApiRepository
 import com.android.fairmoney.repository.RoomRepository
 import com.android.fairmoney.database.room.AppDatabase
 import com.android.fairmoney.database.room.entities.UserDetailEntity
-import com.android.fairmoney.database.room.entities.UserEntity
-import com.android.fairmoney.models.User
-import com.android.fairmoney.interfaces.IApiCallBackGetUser
-import com.android.fairmoney.interfaces.IApiCallBackGetUserDetail
 import com.android.fairmoney.models.UserDetail
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.collections.ArrayList
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.lang.RuntimeException
 
-class UserDetailsViewModel(appDatabase: AppDatabase) : ViewModel()
+class UserDetailViewModel(appDatabase: AppDatabase) : ViewModel()
 {
-    private val mUsersListMutableLiveData: MutableLiveData<List<User.DataBeam>> = MutableLiveData()
+    val TAG: String = this.javaClass.simpleName
+
+    private val mUserDetailMutableLiveData: MutableLiveData<UserDetail> = MutableLiveData()
     private val mRoomRepository = RoomRepository(appDatabase)
 
-    fun getUserDetails(userId: String, apiCalls: ApiCalls): LiveData<List<User.DataBeam>>
+    fun getUserDetail(userId: String, apiCalls: ApiCalls): LiveData<UserDetail>
     {
         try {
-            viewModelScope
-                    .launch {
+            viewModelScope.launch {
                 withContext(Dispatchers.IO) {
+                    populateLocallyStoredData(userId)
 
-                    if(mRoomRepository.loadUsersList().isNotEmpty()){
-                        mUsersListMutableLiveData.postValue(mRoomRepository.loadUsersList().map { it.toUser() })
-                    }
-
-                    Thread(GetUserDetail(userId, apiCalls, object : IApiCallBackGetUserDetail {
-                        override fun onDone(userDetail: UserDetail) {
-                            mRoomRepository
-
-                            mUsersListMutableLiveData.postValue(userEntityList.map { it.toUser() })
+                    ApiRepository(apiCalls).getUsersDetailApiRepository(userId).enqueue(object : Callback<UserDetail> {
+                        override fun onResponse(call: Call<UserDetail>, response: Response<UserDetail>) {
+                            if(response.isSuccessful && response.body()!=null){
+                                updateLocalStorage(response.body()!!)
+                                mUserDetailMutableLiveData.postValue(response.body())
+                            }
                         }
-                    }))
-                            .start()
+
+                        override fun onFailure(call: Call<UserDetail>, t: Throwable) {
+                            Log.e(TAG, "$t")
+                        }
+                    })
                 }
             }
         } catch (ex: IllegalThreadStateException) {
             ex.printStackTrace()
-
-            if(mUsersListMutableLiveData.value == null || mUsersListMutableLiveData.value!!.isEmpty()){
-                mUsersListMutableLiveData.postValue(mRoomRepository.loadUsersList().map { it.toUser() })
-            }
-
+            populateLocallyStoredData(userId)
+        }catch (ex: RuntimeException){
+            ex.printStackTrace()
+            populateLocallyStoredData(userId)
         }
 
-        return mUsersListMutableLiveData
+        return mUserDetailMutableLiveData
     }
 
-    class GetUserDetail(private val userId : String, private val apiCalls: ApiCalls, private val callBackGetUser: IApiCallBackGetUser): Runnable
-    {
-        override fun run(){
-            val getUserDetailResult = ApiRepository(apiCalls).getUsersDetailApiRepository(userId).blockingSingle()
-
-            if(getUserDetailResult!=null)
-            {
-                callBackGetUser.onDoneGetUserDetail(getUserDetailResult);
+    private fun updateLocalStorage(body: UserDetail){
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                val userDetailEntity = UserDetailEntity.from(body)
+                mRoomRepository.updateUserDetail(userDetailEntity)
+                mRoomRepository.updateUserLocation(userDetailEntity.location)
             }
         }
     }
 
+    private fun populateLocallyStoredData(userId: String){
+        try {
+            viewModelScope.launch {
+                withContext(Dispatchers.IO) {
+                    val userDetailAndLocation = mRoomRepository.loadUserDetailByUserId(userId)
+                    Log.d(TAG, "$userDetailAndLocation")
+
+                    if(userDetailAndLocation!=null) mUserDetailMutableLiveData.postValue(userDetailAndLocation.userDetailEntity.toUserDetail())
+                }
+            }
+        }catch (ex:RuntimeException){
+            ex.printStackTrace()
+            Log.d(TAG, "$ex")
+        }
+    }
 }

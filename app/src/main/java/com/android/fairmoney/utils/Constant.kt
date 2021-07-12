@@ -1,7 +1,5 @@
-package com.android.fairmoney
+package com.android.fairmoney.utils
 
-const val ApiToken ="b6101cf12b52e6ca778a01edebc03623"
-const val ImageBaseUrl =""
-const val RequestBaseUrl ="https://dummyapi.io/data/api/"
-const val genericNetworkErrorMsg ="Opps, something went wrong, kindly try again."
-const val DATABASE_NAME ="ratedb"
+const val API_ID = "60e34bf704a0200916bb24d0"
+const val REQUEST_BASE_URL = "https://dummyapi.io/data/api/"
+const val DATABASE_NAME = "ratedb"

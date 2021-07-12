@@ -1,7 +1,9 @@
 package com.android.fairmoney
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.junit.Assert.assertEquals
 import org.junit.Rule
+import org.junit.Test
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -9,29 +11,18 @@ import org.junit.Rule
  * See [testing documentation](http://d.android.com/tools/testing).
  */
 @ExperimentalCoroutinesApi
-class BusinessLogicUnitTest {
+class UnitTest {
 
     @get:Rule
     var coroutinesTestRule = CoroutineTestRule()
-//
-//    @Test
-//    fun testUnitConversion() = runBlocking {
-//        val result  = BusinessLogic().convert(100.0,156.85,410.0)
-//        val expected  = 38
-//        assertEquals(expected, result.roundToInt())
-//    }
-//
-//    @Test
-//    fun testUnitConversionUnSecure() {
-//        val result  = BusinessLogic().convertUnSecure(100.0,156.85,410.0)
-//        val expected  = 38
-//        assertEquals(expected, result.roundToInt())
-//    }
-//
-//    @Test
-//    fun testUnitConversionLocal() = runBlocking {
-//        val result  = BusinessLogic().convertLocal(100.0,156.85,410.0)
-//        val expected  = 0
-//        assertEquals(expected, result.roundToInt())
-//    }
+
+    @Test
+    fun testUnitConversion(){
+        val expected  = "Kolawole Adewale"
+        val fullName = StringBuilder()
+                .append("Kolawole")
+                .append(" ")
+                .append("Adewale").toString()
+        assertEquals(expected, fullName)
+    }
 }

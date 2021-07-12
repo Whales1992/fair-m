@@ -1,9 +1,14 @@
-package com.android.pay_baymax.repository
+package com.android.fairmoney.repository
 
-import com.android.pay_baymax.room.AppDatabase
-import com.android.pay_baymax.room.entities.RateEntity
+import com.android.fairmoney.database.room.AppDatabase
+import com.android.fairmoney.database.room.entities.UserDetailEntity
+import com.android.fairmoney.database.room.entities.UserEntity
 
 class RoomRepository(private val appDatabase: AppDatabase){
-    fun loadRateList(): List<RateEntity> = appDatabase.rateDao().getAllRates()
-    fun updateAllRate(saveList: List<RateEntity>) = appDatabase.rateDao().updateAllRates(saveList)
+    suspend fun loadUsersList(): List<UserEntity> = appDatabase.userDao().getAllUsers()
+    suspend fun updateAllUsers(saveList: List<UserEntity>) = appDatabase.userDao().updateAllUsers(saveList)
+
+    suspend fun loadUserDetailByUserId(userId: String) = appDatabase.userDetailDao().findUserDetailByUserId(userId)
+    suspend fun updateUserDetail(userDetailEntity: UserDetailEntity) = appDatabase.userDetailDao().updateUserDetail(userDetailEntity)
+    suspend fun updateUserLocation(userLocation: UserDetailEntity.Location) = appDatabase.userDetailDao().updateUserLocation(userLocation)
 }

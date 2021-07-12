@@ -19,7 +19,7 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @LargeTest
-class ActivityMainEspressoTest {
+class MainActivityTest {
 
     @get:Rule
     val activityRule = ActivityScenarioRule(MainActivity::class.java)
@@ -41,12 +41,4 @@ class ActivityMainEspressoTest {
     fun testSelectByPositionRecyclerView() {
         onView(withId(R.id.recycler_view_users)).perform(RecyclerViewActions.actionOnItemAtPosition<RecyclerView.ViewHolder>(0,click()))
     }
-
-
-//    @Test
-//    fun testTypeTextIntoEditText() {
-//        mActivityUserDetailBinding.textViewErrorOccurred.visibility = View.VISIBLE
-//        TODO("Need to navigate to UsersDetails Screen First")
-//        onView(withId(R.id.text_view_error_occurred)).perform()
-//    }
 }

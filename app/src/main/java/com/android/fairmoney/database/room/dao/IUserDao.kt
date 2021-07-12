@@ -6,11 +6,8 @@ import com.android.fairmoney.database.room.entities.UserEntity
 @Dao
 interface IUserDao {
     @Query("SELECT * from userentity")
-    fun getAllUsers(): List<UserEntity>
-
-    @Query("SELECT * from userentity WHERE userId = :userId")
-    fun findUserByTypeUserId(userId: String): UserEntity
+    suspend fun getAllUsers(): List<UserEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun updateAllUsers(userList: List<UserEntity>)
+    suspend fun updateAllUsers(userList: List<UserEntity>)
 }

@@ -1,4 +1,4 @@
-package com.android.fairmoney.adapters
+package com.android.fairmoney.interfaces
 
 import android.widget.ImageView
 import android.widget.TextView

@@ -16,33 +16,29 @@
 
 package com.android.fairmoney.activities
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.ImageView
-import android.widget.TextView
-import androidx.cardview.widget.CardView
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.android.fairmoney.adapters.IUsersAction
-import com.android.fairmoney.adapters.UsersListAdapter
 import com.android.fairmoney.database.room.AppDatabase
-import com.android.fairmoney.databinding.ActivityMainBinding
-import com.android.fairmoney.models.User
+import com.android.fairmoney.databinding.ActivityUserDetailBinding
+import com.android.fairmoney.models.UserDetail
 import com.android.fairmoney.network.rectrofit.ApiCalls
 import com.android.fairmoney.utils.ImageBindingAdapter
-import com.android.fairmoney.viewModel.UsersListViewModel
+import com.android.fairmoney.viewModel.UserDetailViewModel
 import com.android.fairmoney.viewModel.ViewModelFactory
 import com.squareup.picasso.Picasso
 import dagger.android.support.DaggerAppCompatActivity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import retrofit2.Retrofit
+import java.lang.StringBuilder
 import javax.inject.Inject
 
-class MainActivity : DaggerAppCompatActivity(), IUsersAction {
+class UserDetailActivity : DaggerAppCompatActivity(){
 
-    private lateinit var mActivityMainBinding: ActivityMainBinding
+    private lateinit var mActivityUserDetailBinding: ActivityUserDetailBinding
 
     @Inject
     lateinit var provideNetworkClient: Retrofit
@@ -55,71 +51,64 @@ class MainActivity : DaggerAppCompatActivity(), IUsersAction {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mActivityMainBinding = ActivityMainBinding.inflate(layoutInflater)
-        val view = mActivityMainBinding.root
+
+        mActivityUserDetailBinding = ActivityUserDetailBinding.inflate(layoutInflater)
+        val view = mActivityUserDetailBinding.root
         setContentView(view)
 
-        mActivityMainBinding
-                .contentLoadingProgressBar
-                .show()
+        val userId = intent.getStringExtra(EXTRA_USER_ID)
 
         ViewModelProvider(this, ViewModelFactory(provideDataBase))
-                .get(UsersListViewModel::class.java)
-                .getUsersList(ApiCalls(provideNetworkClient))
-                .observe(this, usersListObserver)
+                .get(UserDetailViewModel::class.java)
+                .getUserDetail(userId!!, ApiCalls(provideNetworkClient))
+                .observe(this, userDetailObserver)
     }
 
-    private val usersListObserver = Observer<List<User.DataBeam>> { usersList ->
-        runOnUiThread {
-            mActivityMainBinding.contentLoadingProgressBar.hide()
+    private val userDetailObserver = Observer<UserDetail> { userDetail ->
+        GlobalScope.launch(Dispatchers.Main){
+            mActivityUserDetailBinding.progressBarCircular.visibility = View.GONE
 
-            try {
-                if(usersList!=null && usersList.isNotEmpty()){
-                    hideEmptyTextPage()
-                    usersListAdapterSetup(usersList)
-                }else{
-                    showEmptyTextPage()
-                }
-            } catch (ex: Exception) {
-                showEmptyTextPage()
+            if(userDetail==null){
+                showErrorPage()
+            } else {
+                hideErrorPage()
+                setUI(userDetail)
             }
         }
     }
 
-    private fun usersListAdapterSetup(usersList: List<User.DataBeam>) {
-        mActivityMainBinding
-                .recyclerViewUsers
-                .adapter = UsersListAdapter(usersList as ArrayList<User.DataBeam>, this)
+    private fun setUI(userDetail: UserDetail){
+        val fullName = StringBuilder()
+                .append(userDetail.lastName)
+                .append(" ")
+                .append(userDetail.firstName)
+                .toString()
 
-        mActivityMainBinding
-                .recyclerViewUsers
-                .layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
+        val fullAddress = StringBuilder()
+                .append(userDetail.location.street)
+                .append(", ")
+                .append(userDetail.location.city)
+                .append(" ")
+                .append(userDetail.location.state)
+                .append(", ")
+                .append(userDetail.location.country)
+                .toString()
+
+        mActivityUserDetailBinding.textViewFullProfileName.text = fullName
+        mActivityUserDetailBinding.textViewEmail.text = userDetail.email
+        mActivityUserDetailBinding.textViewGender.text = userDetail.gender
+        mActivityUserDetailBinding.textViewPhone.text = userDetail.phone
+        mActivityUserDetailBinding.textViewAddress.text = fullAddress
+
+        ImageBindingAdapter(providePicasso, userDetail.picture, mActivityUserDetailBinding.imageViewFullProfilePicture)
+                .loadImageFromUrl70X70()
     }
 
-    private fun showEmptyTextPage(){
-        mActivityMainBinding
-                .textViewEmpty
-                .visibility = View.VISIBLE
+    private fun showErrorPage(){
+        mActivityUserDetailBinding.textViewErrorOccurred.visibility = View.VISIBLE
     }
 
-    private fun hideEmptyTextPage(){
-        mActivityMainBinding
-                .textViewEmpty
-                .visibility = View.GONE
-    }
-
-    override fun renderItem(profilePictureCardView: CardView, userProfileName: TextView, userProfilePicture: ImageView, user: User.DataBeam) {
-        val fullName = "${user.title}. ${user.lastName} ${user.firstName}"
-        userProfileName.text = fullName
-
-        ImageBindingAdapter(providePicasso, user.picture)
-                .loadImageFromUrl(userProfilePicture)
-
-        userProfilePicture.setOnClickListener {
-            val intent = Intent(this, DisplayMessageActivity::class.java).apply {
-                putExtra(EXTRA_MESSAGE, message)
-            }
-            startActivity(intent)
-        }
+    private fun hideErrorPage(){
+        mActivityUserDetailBinding.textViewErrorOccurred.visibility = View.GONE
     }
 }

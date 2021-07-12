@@ -1,7 +1,5 @@
 <resources>
-    <string name="app_name">Pay-BayMax</string>
-    <!-- Strings used for fragments for navigation -->
-
-    <string name="amount_hint">0.0</string>
+    <string name="app_name">FairMoney</string>
     <string name="empty_text">Empty</string>
+    <string name="profilePicture">An Image View that displays a profile picture</string>
 </resources>

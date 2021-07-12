@@ -1,44 +1,39 @@
 package com.android.fairmoney
 
-import androidx.recyclerview.widget.RecyclerView
-import androidx.test.espresso.Espresso.onData
+import android.content.Intent
 import androidx.test.espresso.Espresso.onView
-import androidx.test.espresso.action.ViewActions.click
-import androidx.test.espresso.contrib.RecyclerViewActions
 import androidx.test.espresso.matcher.ViewMatchers.*
-import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.filters.LargeTest
-import com.android.fairmoney.activities.MainActivity
-import com.android.fairmoney.models.User
-import org.hamcrest.Matchers.*
+import androidx.test.rule.ActivityTestRule
+import com.android.fairmoney.activities.EXTRA_USER_ID
+import com.android.fairmoney.activities.UserDetailActivity
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-
 @RunWith(AndroidJUnit4::class)
-@LargeTest
-class MainActivityTest {
+class UserDetailActivityTest {
 
     @get:Rule
-    val activityRule = ActivityScenarioRule(MainActivity::class.java)
+    var rule: ActivityTestRule<UserDetailActivity> = ActivityTestRule(
+        UserDetailActivity::class.java,
+        false,
+        false
+    )
 
     @Test
     fun testAllViewsAddedToScreen() {
+        val intent = Intent()
+        intent.putExtra(EXTRA_USER_ID, "60d0fe4f5311236168a109ca")
+        rule.launchActivity(intent)
+
         onView(withId(R.id.progress_bar_circular))
-        onView(withId(R.id.text_view_empty))
-        onView(withId(R.id.recycler_view_users))
-    }
-
-    @Test
-    fun testRecyclerViewItemDataType() {
-        onView(withId(R.id.recycler_view_users))
-        onData(allOf(`is`(instanceOf(User.DataBeam::class.java))))
-    }
-
-    @Test
-    fun testSelectByPositionRecyclerView() {
-        onView(withId(R.id.recycler_view_users)).perform(RecyclerViewActions.actionOnItemAtPosition<RecyclerView.ViewHolder>(0,click()))
+        onView(withId(R.id.image_view_full_profile_picture))
+        onView(withId(R.id.text_view_full_profile_name))
+        onView(withId(R.id.text_view_error_occurred))
+        onView(withId(R.id.text_view_address))
+        onView(withId(R.id.text_view_email))
+        onView(withId(R.id.text_view_phone))
+        onView(withId(R.id.text_view_gender))
     }
 }
